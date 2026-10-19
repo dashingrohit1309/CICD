@@ -1,0 +1,42 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gemini-chatbot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gemini-chatbot
+  template:
+    metadata:
+      labels:
+        app: gemini-chatbot
+    spec:
+      imagePullSecrets:
+        - name: ecr-registry
+      containers:
+        - name: gemini-chatbot
+          image: 677913799735.dkr.ecr.ap-south-1.amazonaws.com/gemini-chatbot:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5000
+          env:
+            - name: GEMINI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: gemini-secret
+                  key: GEMINI_API_KEY
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gemini-chatbot-service
+spec:
+  type: NodePort
+  selector:
+    app: gemini-chatbot
+  ports:
+    - port: 5000
+      targetPort: 5000
+      nodePort: 30080
